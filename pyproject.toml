@@ -1,0 +1,13 @@
+[project]
+name = "files-lister"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "ruff>=0.9.2",
+]
+
+[tool.pytest.ini_options]
+addopts = "--log-cli-level=INFO"
+testpaths = ["tests"]
