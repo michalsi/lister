@@ -29,8 +29,10 @@ def should_skip_element(item, args):
             is_skippable_dir(item) or \
             any(skip_dir in item.split(os.sep) for skip_dir in args.skip_dirs)
     elif os.path.isfile(item):
-        return should_skip_file(os.path.basename(item), args.skip_files) or \
-            any(skip_dir in os.path.dirname(item).split(os.sep) for skip_dir in args.skip_dirs)
+        return (not args.include_hidden and is_hidden_path(item)) or \
+            should_skip_file(os.path.basename(item), args.skip_files) or \
+            any(skip_dir in os.path.dirname(item).split(os.sep) for skip_dir in args.skip_dirs) or \
+            (args.include_extension is not None and not item.endswith(args.include_extension))
     return False
 
 def get_files_recursively(path, args):
@@ -55,13 +57,14 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     files_to_parse = []
-
     for item in args.files_and_dirs:
         abs_item = os.path.abspath(item)
+        print(f"Processing item: {abs_item}")  # Debugging line
         if not should_skip_element(abs_item, args):
-            files_to_parse.extend(get_files_recursively(abs_item, args))
-
-    print(files_to_parse)  # Just to visualize the collected files, you can remove this later
+            retrieved_files = get_files_recursively(abs_item, args)
+            print(f"Retrieved files: {retrieved_files}")  # Debugging line
+            files_to_parse.extend(retrieved_files)
+    print(files_to_parse)  # Final output
 
 if __name__ == "__main__":
     main()

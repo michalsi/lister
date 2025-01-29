@@ -1,11 +1,16 @@
-from argparse import Namespace
-
 import os
+import sys
+from argparse import Namespace
+import logging
+from io import StringIO
+from unittest.mock import patch
+
 import pytest
 
 from ..list_and_save import is_hidden_path, should_skip_file, should_include_file, should_skip_element, \
-    is_skippable_dir, DIRS_TO_SKIP
+    is_skippable_dir, DIRS_TO_SKIP, get_files_recursively, parse_arguments, main
 
+SCRIPT_NAME = "list_and_save.py"
 
 @pytest.mark.parametrize("test_input,expected", [
     ("/home/user/__pycache__", True),
@@ -143,37 +148,115 @@ def test_should_skip_file():
         assert result == expected, f"Failed for file: {file_name}, patterns: {skipp_patterns}"
 
 
-def test_should_skip_element():
-    # Test regular file
+def test_should_skip_element(tmp_path):
+
+    # Create temporary files and directories
+    regular_file = tmp_path / "file.txt"
+    regular_file.touch()  # Create the file
     args = Namespace(include_hidden=False, skip_dirs=[], skip_files=[], include_extension=None)
-    assert should_skip_element('/path/to/file.txt', args) == False
+    assert not should_skip_element(str(regular_file), args)
 
-    # Test hidden file
-    assert should_skip_element('/path/to/.hiddenfile.txt', args) == True
+    hidden_file = tmp_path / ".hiddenfile.txt"
+    hidden_file.touch()  # Create the hidden file
+    assert should_skip_element(str(hidden_file), args)
 
-    # Test including hidden files
     args.include_hidden = True
-    assert should_skip_element('/path/to/.hiddenfile.txt', args) == False
+    assert not should_skip_element(str(hidden_file), args)
 
     # Test skipping specific directories
+    skip_me_dir = tmp_path / "skip_me"
+    skip_me_dir.mkdir()  # Create the directory
+    file_in_skip_me = skip_me_dir / "file.txt"
+    file_in_skip_me.touch()  # Create the file
+    dont_skip_dir = tmp_path / "dont_skip"
+    dont_skip_dir.mkdir()  # Create the directory
+    file_in_dont_skip = dont_skip_dir / "file.txt"
+    file_in_dont_skip.touch()  # Create the file
+
     args = Namespace(include_hidden=False, skip_dirs=['skip_me'], skip_files=[], include_extension=None)
-    assert should_skip_element('/path/to/skip_me/file.txt', args) == True
-    assert should_skip_element('/path/to/dont_skip/file.txt', args) == False
+    assert should_skip_element(str(file_in_skip_me), args)
+    assert not should_skip_element(str(file_in_dont_skip), args)
 
     # Test skipping specific files
+    skip_file = tmp_path / "skip.txt"
+    skip_file.touch()  # Create the file
     args = Namespace(include_hidden=False, skip_dirs=[], skip_files=['skip.txt'], include_extension=None)
-    assert should_skip_element('/path/to/skip.txt', args) == True
-    assert should_skip_element('/path/to/dont_skip.txt', args) == False
+    assert should_skip_element(str(skip_file), args)
+    assert not should_skip_element(str(regular_file), args)
 
     # Test file extension filter
+    script_py = tmp_path / "script.py"
+    script_py.touch()  # Create the file
+    script_txt = tmp_path / "script.txt"
+    script_txt.touch()  # Create the file
     args = Namespace(include_hidden=False, skip_dirs=[], skip_files=[], include_extension='.py')
-    assert should_skip_element('/path/to/script.py', args) == False
-    assert should_skip_element('/path/to/script.txt', args) == True
+    assert not should_skip_element(str(script_py), args)
+    assert should_skip_element(str(script_txt), args)
 
     # Test combination of filters
     args = Namespace(include_hidden=True, skip_dirs=['node_modules'], skip_files=['*.log'], include_extension='.js')
-    assert should_skip_element('/path/to/node_modules/script.js', args) == True  # in skip_dirs
-    assert should_skip_element('/path/to/.hidden/script.js', args) == False  # hidden but included
-    assert should_skip_element('/path/to/script.log', args) == True  # in skip_files
-    assert should_skip_element('/path/to/script.py', args) == True  # not .js extension
-    assert should_skip_element('/path/to/script.js', args) == False  # meets all criteria
+    node_modules_dir = tmp_path / "node_modules"
+    node_modules_dir.mkdir()  # Create the directory
+    script_js = node_modules_dir / "script.js"
+    script_js.touch()  # Create the file
+    hidden_script_js = tmp_path / ".hidden" / "script.js"
+    hidden_script_js.parent.mkdir()  # Create the hidden directory
+    hidden_script_js.touch()  # Create the file
+    script_log = tmp_path / "script.log"
+    script_log.touch()  # Create the file
+
+    assert should_skip_element(str(script_js), args)  # in skip_dirs
+    assert not should_skip_element(str(hidden_script_js), args)  # hidden but included
+    assert should_skip_element(str(script_log), args)  # in skip_files
+    assert should_skip_element(str(script_py), args)  # not .js extension
+
+
+def test_get_files_recursively_nested(tmp_path):
+    # Create a nested directory structure
+    subdir1 = tmp_path / "subdir1"
+    subdir1.mkdir()
+    subdir2 = subdir1 / "subdir2"
+    subdir2.mkdir()
+    (tmp_path / "file1.txt").touch()
+    (subdir1 / "file2.txt").touch()
+    (subdir2 / "file3.txt").touch()
+    args = Namespace(include_hidden=False, skip_dirs=[], skip_files=[], include_extension=".txt")
+    files = get_files_recursively(str(tmp_path), args)
+    expected_files = [
+        str(tmp_path / "file1.txt"),
+        str(subdir1 / "file2.txt"),
+        str(subdir2 / "file3.txt"),
+    ]
+    assert sorted(files) == sorted(expected_files)
+
+def test_get_files_recursively_nonexistent_path():
+    args = Namespace(include_hidden=False, skip_dirs=[], skip_files=[], include_extension=".txt")
+    files = get_files_recursively("nonexistent_path", args)
+    assert files == []  # Assert that the returned list is empty
+
+
+def test_parse_arguments_required(mocker):
+    test_args = [SCRIPT_NAME, "-f", "file1", "dir1"]
+    mocker.patch('sys.argv', test_args)
+    args = parse_arguments()
+    assert args.files_and_dirs == ["file1", "dir1"]
+    assert not args.include_hidden
+    assert args.include_extension is None
+    assert args.skip_dirs == []
+    assert args.skip_files == []
+
+def test_parse_arguments_optional(mocker):
+    test_args = [SCRIPT_NAME, "-f", "file1", "-i", "-x", ".py", "--skip_dirs", "dir_to_skip", "--skip_files", "file_to_skip"]
+    mocker.patch('sys.argv', test_args)
+    args = parse_arguments()
+    assert args.files_and_dirs == ["file1"]
+    assert args.include_hidden
+    assert args.include_extension == ".py"
+    assert args.skip_dirs == ["dir_to_skip"]
+    assert args.skip_files == ["file_to_skip"]
+
+def test_parse_arguments_missing_required(mocker):
+    test_args = [SCRIPT_NAME]
+    mocker.patch('sys.argv', test_args)
+    with pytest.raises(SystemExit):
+        parse_arguments()
