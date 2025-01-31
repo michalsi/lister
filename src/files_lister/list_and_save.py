@@ -1,7 +1,8 @@
 import argparse
+from enum import Enum
 from pathlib import Path
 from typing import Set, List, Iterator
-from enum import Enum
+
 
 class SkipDirs(Enum):
     PYCACHE = "__pycache__"
@@ -9,7 +10,9 @@ class SkipDirs(Enum):
     NODE_MODULES = "node_modules"
     VENV = "venv"
 
+
 SKIP_DIRS_VALUES = frozenset(skip_dir.value for skip_dir in SkipDirs)
+
 
 def is_skippable_path(path: Path, skip_dirs: Set[str], include_hidden: bool) -> bool:
     """Check if a path should be skipped based on given criteria."""
@@ -29,12 +32,14 @@ def is_skippable_path(path: Path, skip_dirs: Set[str], include_hidden: bool) -> 
             return True
     return False
 
+
 def should_include_file(file_path: Path, include_extensions: Set[str], skip_files: Set[str]) -> bool:
     """Check if a file should be included based on extension and skip patterns."""
     return (
             (not include_extensions or file_path.suffix in include_extensions)
             and not any(pattern in file_path.name for pattern in skip_files)
     )
+
 
 def get_files_recursively(path: Path, args: argparse.Namespace) -> Iterator[Path]:
     """Recursively get files from a directory based on given criteria."""
@@ -49,18 +54,23 @@ def get_files_recursively(path: Path, args: argparse.Namespace) -> Iterator[Path
                 yield item
     # Add this line for debugging
 
+
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="List and save content of source code files.")
     parser.add_argument("-f", "--files_and_dirs", nargs="+", required=True, help="File/dir or list them to process")
-    parser.add_argument("-i", "--include_hidden", action="store_true", help="Include hidden files and directories (by default, they are excluded)")
-    parser.add_argument("-x", "--include_extension", nargs="+", type=str, help="Include only files with these extensions (e.g., '.txt' '.py')")
+    parser.add_argument("-i", "--include_hidden", action="store_true",
+                        help="Include hidden files and directories (by default, they are excluded)")
+    parser.add_argument("-x", "--include_extension", nargs="+", type=str,
+                        help="Include only files with these extensions (e.g., '.txt' '.py')")
     parser.add_argument("-d", "--skip_dirs", nargs="+", default=[], help="Additional directories to skip")
-    parser.add_argument("-s", "--skip_files", nargs="+", default=[], help="Files or file patterns to skip (e.g., '__init__.py' or '.pyc')")
+    parser.add_argument("-s", "--skip_files", nargs="+", default=[],
+                        help="Files or file patterns to skip (e.g., '__init__.py' or '.pyc')")
     parser.add_argument("-q", "--quiet", action="store_true", help="Do not print output to console")
     parser.add_argument("--full_path", action="store_true", help="Print full path instead of relative path")
 
     return parser.parse_args()
+
 
 def main() -> None:
     args = parse_arguments()
@@ -83,6 +93,7 @@ def main() -> None:
     with open("../../files_output", "w", encoding='utf-8') as output_file:
         output_file.writelines(output_lines)
 
+
 def format_file_output(file: Path, full_path: bool) -> str:
     """Format the output for each file including its name, path, and content."""
     try:
@@ -90,8 +101,7 @@ def format_file_output(file: Path, full_path: bool) -> str:
     except UnicodeDecodeError:
         content = "[Binary or Non-UTF-8 encoded file, content not displayed]"
     path_display = file.resolve() if full_path else file.relative_to(Path.cwd())
-    return f"File Name: {file.name}, Path: {path_display}\nContent:\n```\n{content}\n```\n{'-'*40}\n"
-
+    return f"File Name: {file.name}, Path: {path_display}\nContent:\n```\n{content}\n```\n{'-' * 40}\n"
 
 
 if __name__ == "__main__":

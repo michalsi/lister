@@ -1,20 +1,23 @@
 import io
 import sys
-from pathlib import Path
 from argparse import Namespace
-
-import pytest
+from pathlib import Path
 from unittest.mock import patch
 
-from src.files_lister.list_and_save import is_skippable_path, should_include_file, get_files_recursively, parse_arguments, SkipDirs, \
+import pytest
+
+from src.files_lister.list_and_save import is_skippable_path, should_include_file, get_files_recursively, \
+    parse_arguments, SkipDirs, \
     main
 
 SCRIPT_NAME = "list_and_save.py"
+
 
 def test_skip_dirs_enum():
     assert SkipDirs.PYCACHE.value == "__pycache__"
     assert SkipDirs.GIT.value == ".git"
     assert SkipDirs.NODE_MODULES.value == "node_modules"
+
 
 @pytest.mark.parametrize("test_input,expected", [
     (Path("/home/user/__pycache__"), True),
@@ -32,6 +35,7 @@ def test_skip_dirs_enum():
 ])
 def test_is_skippable_path_dirs(test_input, expected):
     assert is_skippable_path(test_input, set(), False) == expected
+
 
 @pytest.mark.parametrize("test_input,expected", [
     (Path(".hidden_file"), True),
@@ -56,6 +60,7 @@ def test_is_skippable_path_dirs(test_input, expected):
 def test_is_skippable_path_hidden(test_input, expected):
     assert is_skippable_path(test_input, set(), False) == expected
 
+
 @pytest.mark.parametrize("file_name, skip_patterns, expected", [
     ("example.txt", ["example"], False),
     ("example.txt", [".txt"], False),
@@ -78,6 +83,7 @@ def test_should_include_file(file_name, skip_patterns, expected):
     path = Path(file_name)
     assert should_include_file(path, set(), set(skip_patterns)) == expected
 
+
 def test_get_files_recursively_nested(tmp_path):
     # Create a nested directory structure
     subdir1 = tmp_path / "subdir1"
@@ -93,13 +99,15 @@ def test_get_files_recursively_nested(tmp_path):
         tmp_path / "file1.txt",
         subdir1 / "file2.txt",
         subdir2 / "file3.txt",
-        ]
+    ]
     assert sorted(files) == sorted(expected_files)
+
 
 def test_get_files_recursively_nonexistent_path():
     args = Namespace(include_hidden=False, skip_dirs=[], skip_files=[], include_extension=[".txt"])
     files = list(get_files_recursively(Path("nonexistent_path"), args))
     assert files == []
+
 
 def test_parse_arguments_required(mocker):
     test_args = [SCRIPT_NAME, "-f", "file1", "dir1"]
@@ -111,8 +119,10 @@ def test_parse_arguments_required(mocker):
     assert args.skip_dirs == []
     assert args.skip_files == []
 
+
 def test_parse_arguments_optional(mocker):
-    test_args = [SCRIPT_NAME, "-f", "file1", "-i", "-x", ".py", "--skip_dirs", "dir_to_skip", "--skip_files", "file_to_skip"]
+    test_args = [SCRIPT_NAME, "-f", "file1", "-i", "-x", ".py", "--skip_dirs", "dir_to_skip", "--skip_files",
+                 "file_to_skip"]
     mocker.patch('sys.argv', test_args)
     args = parse_arguments()
     assert args.files_and_dirs == ["file1"]
@@ -120,6 +130,7 @@ def test_parse_arguments_optional(mocker):
     assert args.include_extension == [".py"]
     assert args.skip_dirs == ["dir_to_skip"]
     assert args.skip_files == ["file_to_skip"]
+
 
 def test_parse_arguments_missing_required(mocker):
     test_args = [SCRIPT_NAME]
