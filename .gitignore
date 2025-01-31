@@ -1,7 +1,7 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
-build/
+build/v
 dist/
 wheels/
 *.egg-info
@@ -16,3 +16,4 @@ test_tmp_dir
 
 .coverage
 htmlcov
+files_output

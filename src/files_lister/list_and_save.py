@@ -7,15 +7,27 @@ class SkipDirs(Enum):
     PYCACHE = "__pycache__"
     GIT = ".git"
     NODE_MODULES = "node_modules"
+    VENV = "venv"
 
 SKIP_DIRS_VALUES = frozenset(skip_dir.value for skip_dir in SkipDirs)
 
 def is_skippable_path(path: Path, skip_dirs: Set[str], include_hidden: bool) -> bool:
     """Check if a path should be skipped based on given criteria."""
-    return (
-            any(part in SKIP_DIRS_VALUES or part in skip_dirs for part in path.parts)
-            or (not include_hidden and any(part.startswith('.') and part not in {'.', '..'} for part in path.parts))
-    )
+    if path.name in {'.', '..'}:
+        return False
+    parts = path.parts
+    # Check for skip directories
+    if any(part in SKIP_DIRS_VALUES or part in skip_dirs for part in parts):
+        return True
+    # Check for hidden files/directories
+    if not include_hidden:
+        # Check if the file/directory itself is hidden
+        if path.name.startswith('.') and path.name not in {'.', '..'}:
+            return True
+        # Check if any parent directory is hidden
+        if any(part.startswith('.') and part not in {'.', '..'} for part in parts[:-1]):
+            return True
+    return False
 
 def should_include_file(file_path: Path, include_extensions: Set[str], skip_files: Set[str]) -> bool:
     """Check if a file should be included based on extension and skip patterns."""
@@ -32,35 +44,55 @@ def get_files_recursively(path: Path, args: argparse.Namespace) -> Iterator[Path
 
     for item in path.rglob('*'):
         if item.is_file():
-            if not is_skippable_path(item.parent, skip_dirs, args.include_hidden) and \
+            if not is_skippable_path(item, skip_dirs, args.include_hidden) and \
                     should_include_file(item, include_extensions, skip_files):
                 yield item
+    # Add this line for debugging
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="List and save content of source code files.")
     parser.add_argument("-f", "--files_and_dirs", nargs="+", required=True, help="File/dir or list them to process")
-    parser.add_argument("-i", "--include_hidden", action="store_true", help="Include hidden files (default is to exclude)")
+    parser.add_argument("-i", "--include_hidden", action="store_true", help="Include hidden files and directories (by default, they are excluded)")
     parser.add_argument("-x", "--include_extension", nargs="+", type=str, help="Include only files with these extensions (e.g., '.txt' '.py')")
     parser.add_argument("-d", "--skip_dirs", nargs="+", default=[], help="Additional directories to skip")
     parser.add_argument("-s", "--skip_files", nargs="+", default=[], help="Files or file patterns to skip (e.g., '__init__.py' or '.pyc')")
+    parser.add_argument("-q", "--quiet", action="store_true", help="Do not print output to console")
+    parser.add_argument("--full_path", action="store_true", help="Print full path instead of relative path")
+
     return parser.parse_args()
 
 def main() -> None:
     args = parse_arguments()
     files_to_parse: List[Path] = []
+    output_lines: List[str] = []
 
     for item in args.files_and_dirs:
         path = Path(item).resolve()
-        print(f"Processing item: {path}")  # Debugging line
         if path.is_file():
             files_to_parse.append(path)
         elif path.is_dir():
             files_to_parse.extend(get_files_recursively(path, args))
 
-    print("Files to parse:")
     for file in files_to_parse:
-        print(file)
+        formatted_output = format_file_output(file, args.full_path)
+        output_lines.append(formatted_output)
+        if not args.quiet:
+            print(formatted_output)
+
+    with open("../../files_output", "w", encoding='utf-8') as output_file:
+        output_file.writelines(output_lines)
+
+def format_file_output(file: Path, full_path: bool) -> str:
+    """Format the output for each file including its name, path, and content."""
+    try:
+        content = file.read_text(encoding='utf-8')
+    except UnicodeDecodeError:
+        content = "[Binary or Non-UTF-8 encoded file, content not displayed]"
+    path_display = file.resolve() if full_path else file.relative_to(Path.cwd())
+    return f"File Name: {file.name}, Path: {path_display}\nContent:\n```\n{content}\n```\n{'-'*40}\n"
+
+
 
 if __name__ == "__main__":
     main()

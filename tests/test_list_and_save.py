@@ -1,10 +1,13 @@
+import io
+import sys
 from pathlib import Path
 from argparse import Namespace
 
 import pytest
 from unittest.mock import patch
 
-from ..list_and_save import is_skippable_path, should_include_file, get_files_recursively, parse_arguments, SkipDirs
+from src.files_lister.list_and_save import is_skippable_path, should_include_file, get_files_recursively, parse_arguments, SkipDirs, \
+    main
 
 SCRIPT_NAME = "list_and_save.py"
 
@@ -123,3 +126,24 @@ def test_parse_arguments_missing_required(mocker):
     mocker.patch('sys.argv', test_args)
     with pytest.raises(SystemExit):
         parse_arguments()
+
+
+def test_main_output_full_path(tmp_path):
+    # Create a temporary directory structure
+    file1 = tmp_path / "file1.txt"
+    file1.touch()
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    file2 = subdir / "file2.py"
+    file2.touch()
+    # Redirect stdout to capture print output
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+    # Mock sys.argv to simulate command line arguments with --full_path
+    with patch('sys.argv', ['list_and_save.py', '-f', str(tmp_path), '--full_path']):
+        main()
+    sys.stdout = sys.__stdout__
+    output = captured_output.getvalue()
+    # Check for full path in the output
+    assert f"File Name: file1.txt, Path: {file1.resolve()}" in output
+    assert f"File Name: file2.py, Path: {file2.resolve()}" in output
