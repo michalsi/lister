@@ -31,13 +31,13 @@ uv run list_and_save.py [OPTIONS]
 ```
 
 Options:
-`-f, --files_and_dirs`: File/directory or list of them to process (required)
-`-i, --include_hidden`: Include hidden files and directories
-`-x, --include_extension`: Include only files with specified extensions (e.g., '.txt' '.py')
-`-d, --skip_dirs`: Additional directories to skip
-`-s, --skip_files`: Files or file patterns to skip
-`-q, --quiet`: Do not print output to console
-`--full_path`: Print full path instead of relative path
+- `-f, --files_and_dirs`: File/directory or list of them to process (required)
+- `-i, --include_hidden`: Include hidden files and directories
+- `-x, --include_extension`: Include only files with specified extensions (e.g., '.txt' '.py')
+- `-d, --skip_dirs`: Additional directories to skip
+- `-s, --skip_files`: Files or file patterns to skip
+- `-q, --quiet`: Do not print output to console
+- `--full_path`: Print full path instead of relative path
 
 ### Example:
 ```
