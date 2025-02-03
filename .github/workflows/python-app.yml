@@ -41,7 +41,7 @@ jobs:
         uv run flake8 src tests  --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run tests with coverage
       run: |
-        uv run coverage run -m pytest --basetemp=test_tmp_dir
+        uv run coverage run -m pytest --basetemp=test_tmp_dir -cov --junitxml=junit.xml -o junit_family=legacy
         uv run coverage xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
@@ -53,6 +53,11 @@ jobs:
         version: latest
         verbose: true
         slug: michalsi/lister
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
     - name: Cache dependencies
       uses: actions/cache@v3
       with:
