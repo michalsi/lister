@@ -43,12 +43,10 @@ jobs:
         uv run pytest --basetemp=test_tmp_dir
     - name: Run coverage
       run: |
-        uv run coverage run -m pytest --basetemp=test_tmp_dir
-        uv run coverage xml
+        uv run pytest --cov-branch --cov-report=xml --basetemp=test_tmp_dir
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage.xml
         token: ${{ secrets.CODECOV_TOKEN }}  # Use the secret here
         flags: unittests
         fail_ci_if_error: true
