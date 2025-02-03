@@ -40,13 +40,15 @@ jobs:
         uv run flake8 src tests  --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run tests with coverage
       run: |
-        uv run pytest --cov --basetemp=test_tmp_dir
+        uv run coverage run -m pytest --basetemp=test_tmp_dir
+        uv run coverage xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}  # Use the secret here
         flags: unittests
         fail_ci_if_error: true
+        files: ./coverage.xml
     - name: Cache dependencies
       uses: actions/cache@v3
       with:
