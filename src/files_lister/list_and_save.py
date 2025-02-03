@@ -1,7 +1,7 @@
 import argparse
 from enum import Enum
 from pathlib import Path
-from typing import Set, List, Iterator
+from typing import Set, List, Iterator, Tuple
 
 
 class SkipDirs(Enum):
@@ -15,21 +15,36 @@ SKIP_DIRS_VALUES = frozenset(skip_dir.value for skip_dir in SkipDirs)
 
 
 def is_skippable_path(path: Path, skip_dirs: Set[str], include_hidden: bool) -> bool:
-    """Check if a path should be skipped based on given criteria."""
-    if path.name in {'.', '..'}:
+    """Determine if a given path should be skipped based on the directory and visibility criteria."""
+
+    def is_special_directory(name: str) -> bool:
+        """Check if the directory is a special directory (i.e., '.' or '..')."""
+        return name in {'.', '..'}
+
+    def contains_skip_directories(path_parts: Tuple[str, ...]) -> bool:
+        """Check if any part of the path matches the directories to skip."""
+        return any(part in SKIP_DIRS_VALUES or part in skip_dirs for part in path_parts)
+
+    def is_hidden(name: str) -> bool:
+        """Check if a file or directory is hidden."""
+        return name.startswith('.') and not is_special_directory(name)
+
+    def has_hidden_parents(path_parts: Tuple[str, ...]) -> bool:
+        """Check if any parent directory in the path is hidden."""
+        return any(is_hidden(part) for part in path_parts[:-1])
+
+    if is_special_directory(path.name):
         return False
-    parts = path.parts
-    # Check for skip directories
-    if any(part in SKIP_DIRS_VALUES or part in skip_dirs for part in parts):
+
+    path_parts = path.parts
+
+    if contains_skip_directories(path_parts):
         return True
-    # Check for hidden files/directories
+
     if not include_hidden:
-        # Check if the file/directory itself is hidden
-        if path.name.startswith('.') and path.name not in {'.', '..'}:
+        if is_hidden(path.name) or has_hidden_parents(path_parts):
             return True
-        # Check if any parent directory is hidden
-        if any(part.startswith('.') and part not in {'.', '..'} for part in parts[:-1]):
-            return True
+
     return False
 
 
