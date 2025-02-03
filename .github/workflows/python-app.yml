@@ -51,6 +51,8 @@ jobs:
         fail_ci_if_error: true
         files: ./coverage.xml
         version: latest
+        verbose: true
+        slug: michalsi/lister
     - name: Cache dependencies
       uses: actions/cache@v3
       with:
