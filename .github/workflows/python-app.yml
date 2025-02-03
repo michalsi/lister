@@ -11,7 +11,8 @@ on:
 
 permissions:
   contents: read
-
+env:
+  CODECOV_VERSION: 'v5.3.1'
 jobs:
   build:
 
@@ -45,14 +46,15 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}  # Use the secret here
+        token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
         fail_ci_if_error: true
         files: ./coverage.xml
+        version: ${{ env.CODECOV_VERSION }}
     - name: Cache dependencies
       uses: actions/cache@v3
       with:
-        path: .venv  # Assuming your virtual environment is in .venv
+        path: .venv
         key: ${{ runner.os }}-python-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-python-
