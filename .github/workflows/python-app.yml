@@ -51,3 +51,11 @@ jobs:
         file: ./coverage.xml
         flags: unittests
         fail_ci_if_error: true
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv  # Assuming your virtual environment is in .venv
+        key: ${{ runner.os }}-python-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-python-
