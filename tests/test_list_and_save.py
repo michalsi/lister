@@ -6,9 +6,8 @@ from unittest.mock import patch
 
 import pytest
 
-from src.files_lister.list_and_save import is_skippable_path, should_include_file, get_files_recursively, \
-    parse_arguments, SkipDirs, \
-    main
+from ..src.files_lister.list_and_save import is_skippable_path, should_include_file, get_files_recursively, \
+    parse_arguments, SkipDirs, main
 
 SCRIPT_NAME = "list_and_save.py"
 

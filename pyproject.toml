@@ -13,3 +13,6 @@ dependencies = [
 [tool.pytest.ini_options]
 addopts = "--log-cli-level=INFO"
 testpaths = ["tests"]
+pythonpath = [
+    "src"
+]
