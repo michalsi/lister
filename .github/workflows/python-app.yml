@@ -50,7 +50,7 @@ jobs:
         flags: unittests
         fail_ci_if_error: true
         files: ./coverage.xml
-        version: ${{ env.CODECOV_VERSION }}
+        version: latest
     - name: Cache dependencies
       uses: actions/cache@v3
       with:
