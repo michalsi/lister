@@ -18,3 +18,4 @@ test_tmp_dir
 coverage.xml
 htmlcov
 files_output
+junit.xml
