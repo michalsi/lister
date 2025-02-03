@@ -1,4 +1,5 @@
 # Files Lister
+[![codecov](https://codecov.io/gh/michalsi/lister/graph/badge.svg?token=MXS5ETIC8Q)](https://codecov.io/gh/michalsi/lister)
 
 Files Lister is a Python utility for recursively listing and saving the content of source code files in a directory structure.
 It provides flexible options for including or excluding files based on various criteria.
