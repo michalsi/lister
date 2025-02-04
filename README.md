@@ -66,7 +66,7 @@ uv run pytest --basetemp=test_tmp_dir
 The `--basetemp` option is used to specify a custom directory for temporary test files. 
 This is particularly important for this project to avoid issues with the default .tmp folder created by `pytest`,
 which is typically hidden and would otherwise be excluded by the script's logic.
-By using `--basetemp=test_tmp_di`r, we ensure that temporary files do not interfere with the script's file listing and processing behavior.
+By using `--basetemp=test_tmp_dir`, we ensure that temporary files do not interfere with the script's file listing and processing behavior.
 
 ### Code coverage
 To generate a code coverage report:
