@@ -19,3 +19,9 @@ testpaths = ["tests"]
 pythonpath = [
     "src"
 ]
+
+[project.scripts]
+list_files = "files_lister.list_and_save:main"
+
+[tool.uv]
+package = true

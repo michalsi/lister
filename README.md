@@ -16,12 +16,8 @@ It provides flexible options for including or excluding files based on various c
 
 ## Installation
 
-To install Files Lister, ensure you have Python 3.9 or later installed. Then, clone this repository:
+To install Files Lister, ensure you have Python 3.9 or later installed. 
 
-```bash
-git clone https://github.com/yourusername/files_lister.git
-cd files_lister
-```
 This project uses UV (Python packaging in Rust) for dependency management.
 If you don't have UV installed, you can install it following the instructions at [UV's official repository](https://github.com/astral-sh/uv).
 
@@ -29,7 +25,7 @@ If you don't have UV installed, you can install it following the instructions at
 To use Files Lister, run the following command:
 
 ```
-uv run list_and_save.py [OPTIONS]
+uv run list_files [OPTIONS]
 ```
 
 Options:
@@ -43,13 +39,13 @@ Options:
 
 ### Example:
 ```
-uv run list_and_save.py -f "." -x ".py" -d "venv" "build" -s "__init__.py"
+uv run list_files -f "." -x ".py" -d "venv" "build" -s "__init__.py"
 ```
 This command will list all Python files in the current directory, excluding the "venv" and "build" directories, 
 and skipping "init.py" files.
 
 ## Output
-The script generates a file named files_output in the current directory, containing the list of files and their contents.
+The script generates a file named `files_output` in the current directory, containing the list of files and their contents.
 
 ## Development
 

@@ -105,7 +105,7 @@ def main() -> None:
         if not args.quiet:
             print(formatted_output)
 
-    with open("../../files_output", "w", encoding='utf-8') as output_file:
+    with open("files_output", "w", encoding='utf-8') as output_file:
         output_file.writelines(output_lines)
 
 
