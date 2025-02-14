@@ -115,7 +115,17 @@ def format_file_output(file: Path, full_path: bool) -> str:
         content = file.read_text(encoding='utf-8')
     except UnicodeDecodeError:
         content = "[Binary or Non-UTF-8 encoded file, content not displayed]"
-    path_display = file.resolve() if full_path else file.relative_to(Path.cwd())
+    
+    try:
+        # Attempt to get the relative path
+        path_display = file.relative_to(Path.cwd())
+    except ValueError:
+        # Fall back to the absolute path if relative path calculation fails
+        path_display = file.resolve()
+
+    if full_path:
+        path_display = file.resolve()
+
     return f"File Name: {file.name}, Path: {path_display}\nContent:\n```\n{content}\n```\n{'-' * 40}\n"
 
 
