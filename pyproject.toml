@@ -1,9 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "files_lister"
 version = "0.1.0"
-description = "Add your description here"
+description = "A utility for recursively listing and saving the content of source code files"
 readme = "README.md"
 requires-python = ">=3.9"
+license = "MIT"
 dependencies = [
     "flake8>=7.1.1",
     "pytest>=8.3.4",
@@ -21,7 +26,10 @@ pythonpath = [
 ]
 
 [project.scripts]
-list_files = "files_lister.list_and_save:main"
+lister = "lister.main:main"
 
 [tool.uv]
 package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lister"]
