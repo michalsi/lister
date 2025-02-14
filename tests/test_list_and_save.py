@@ -1,12 +1,13 @@
 import io
 import sys
+import os
 from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-from ..src.files_lister.list_and_save import is_skippable_path, should_include_file, get_files_recursively, \
+from ..src.files_lister.list_and_save import format_file_output, is_skippable_path, should_include_file, get_files_recursively, \
     parse_arguments, SkipDirs, main
 
 SCRIPT_NAME = "list_and_save.py"
@@ -157,3 +158,25 @@ def test_main_output_full_path(tmp_path):
     # Check for full path in the output
     assert f"File Name: file1.txt, Path: {file1.resolve()}" in output
     assert f"File Name: file2.py, Path: {file2.resolve()}" in output
+
+
+def test_format_file_output_relative_path_within_cwd(tmp_path, monkeypatch):
+    file = tmp_path / "file.txt"
+    file.write_text("Sample content")
+
+    monkeypatch.chdir(tmp_path)
+
+    result = format_file_output(file, full_path=False)
+
+    expected_output = f"File Name: file.txt, Path: {file.relative_to(tmp_path)}"
+    assert expected_output in result
+    
+   
+def test_format_file_output_full_path(tmp_path):
+    file = tmp_path / "file.txt"
+    file.write_text("Sample content")
+
+    result = format_file_output(file, full_path=True)
+
+    expected_output = f"File Name: file.txt, Path: {file.resolve()}"
+    assert expected_output in result
