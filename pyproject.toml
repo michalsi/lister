@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "files_lister"
-version = "0.1.0"
+version = "0.1.2"
 description = "A utility for recursively listing and saving the content of source code files"
-readme = "README.md"
+readme = "README-PyPI.md"  # Use the new README file for PyPI
 requires-python = ">=3.9"
 license = "MIT"
 dependencies = [
@@ -26,7 +26,7 @@ pythonpath = [
 ]
 
 [project.scripts]
-lister = "lister.main:main"
+files-lister = "lister.main:main"
 
 [tool.uv]
 package = true

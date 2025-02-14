@@ -36,7 +36,7 @@ This will make the list_files command available globally on your system.
 ## Usage
 To use Files Lister, run the following command:
 ```bash
-list_files [OPTIONS]
+files-lister [OPTIONS]
 ```
 
 ### Options:
@@ -55,7 +55,9 @@ list_files [OPTIONS]
 `--full_path`: Print full path instead of relative path
 
 ### Example:
-list_files -f "." -x ".py" -d "venv" "build" -s "__init__.py"
+```bash
+files-lister -f "." -x ".py" -d "venv" "build" -s "__init__.py"
+```
 This command will list all Python files in the current directory, excluding the "venv" and "build" directories, and skipping "init.py" files.
 
 ## Output
@@ -93,3 +95,18 @@ uv add [package_name]
 ```
 
 This will update both pyproject.toml and uv.lock.
+
+## Building and Publishing
+To build your project and prepare it for distribution, run:
+
+```bash
+uv build
+```
+This command will generate the necessary distribution files in the dist directory.
+
+To upload your package to PyPI, ensure you have twine installed, and then execute:
+
+```bash
+uv run twine upload dist/*
+```
+This will upload your package to PyPI, making it available for others to install.
