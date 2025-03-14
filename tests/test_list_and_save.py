@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from ..src.lister.main import format_file_output, is_skippable_path, should_include_file, get_files_recursively, \
-    parse_arguments, SkipDirs, main
+    parse_arguments, SkipDirs, main, remove_empty_lines
 
 SCRIPT_NAME = "list_and_save.py"
 
@@ -166,7 +166,7 @@ def test_format_file_output_relative_path_within_cwd(tmp_path, monkeypatch):
 
     monkeypatch.chdir(tmp_path)
 
-    result = format_file_output(file, full_path=False)
+    result = format_file_output(file, full_path=False, remove_empty_lines_enabled=False)
 
     expected_output = f"File Name: file.txt, Path: {file.relative_to(tmp_path)}"
     assert expected_output in result
@@ -176,7 +176,39 @@ def test_format_file_output_full_path(tmp_path):
     file = tmp_path / "file.txt"
     file.write_text("Sample content")
 
-    result = format_file_output(file, full_path=True)
+    result = format_file_output(file, full_path=True,remove_empty_lines_enabled=False)
 
     expected_output = f"File Name: file.txt, Path: {file.resolve()}"
     assert expected_output in result
+
+def test_remove_empty_lines():
+    content = "line1\n\nline2\n  \nline3\n\n"
+    expected = "line1\nline2\nline3"
+    assert remove_empty_lines(content) == expected
+
+
+def test_format_file_output_empty_lines(tmp_path):
+    # Create a test file with empty lines
+    file = tmp_path / "test.txt"
+    content = "line1\n\nline2\n  \nline3\n\n"
+    file.write_text(content)
+
+    # Test with remove_empty_lines enabled (default)
+    result = format_file_output(file, full_path=False, remove_empty_lines_enabled=True)
+    assert "line1\nline2\nline3" in result
+
+    # Test with remove_empty_lines disabled
+    result = format_file_output(file, full_path=False, remove_empty_lines_enabled=False)
+    assert content in result
+
+
+@pytest.mark.parametrize("content,expected", [
+    ("", ""),  # Empty file
+    ("\n\n\n", ""),  # Only empty lines
+    ("  \n\t\n ", ""),  # Only whitespace
+    ("line1", "line1"),  # Single line without newline
+    ("line1\nline2", "line1\nline2"),  # No empty lines
+    ("line1\n  \nline2", "line1\nline2"),  # Whitespace line
+])
+def test_remove_empty_lines_edge_cases(content, expected):
+    assert remove_empty_lines(content) == expected

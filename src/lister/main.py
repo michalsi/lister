@@ -81,6 +81,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("-d", "--skip_dirs", nargs="+", default=[], help="Additional directories to skip")
     parser.add_argument("-s", "--skip_files", nargs="+", default=[],
                         help="Files or file patterns to skip (e.g., '__init__.py' or '.pyc')")
+    parser.add_argument("-r", "--remove_empty_lines", action="store_false",
+                        help="Keep empty lines in output (by default, empty lines are removed)")
     parser.add_argument("-q", "--quiet", action="store_true", help="Do not print output to console")
     parser.add_argument("--full_path", action="store_true", help="Print full path instead of relative path")
 
@@ -100,7 +102,7 @@ def main() -> None:
             files_to_parse.extend(get_files_recursively(path, args))
 
     for file in files_to_parse:
-        formatted_output = format_file_output(file, args.full_path)
+        formatted_output = format_file_output(file, args.full_path, args.remove_empty_lines)
         output_lines.append(formatted_output)
         if not args.quiet:
             print(formatted_output)
@@ -109,18 +111,18 @@ def main() -> None:
         output_file.writelines(output_lines)
 
 
-def format_file_output(file: Path, full_path: bool) -> str:
+def format_file_output(file: Path, full_path: bool, remove_empty_lines_enabled: bool) -> str:
     """Format the output for each file including its name, path, and content."""
     try:
         content = file.read_text(encoding='utf-8')
+        if remove_empty_lines_enabled:
+            content = remove_empty_lines(content)
     except UnicodeDecodeError:
         content = "[Binary or Non-UTF-8 encoded file, content not displayed]"
-    
+
     try:
-        # Attempt to get the relative path
         path_display = file.relative_to(Path.cwd())
     except ValueError:
-        # Fall back to the absolute path if relative path calculation fails
         path_display = file.resolve()
 
     if full_path:
@@ -128,6 +130,9 @@ def format_file_output(file: Path, full_path: bool) -> str:
 
     return f"File Name: {file.name}, Path: {path_display}\nContent:\n```\n{content}\n```\n{'-' * 40}\n"
 
+def remove_empty_lines(content: str) -> str:
+    """Remove empty lines from the content while preserving line endings."""
+    return '\n'.join(line for line in content.splitlines() if line.strip())
 
 if __name__ == "__main__":
     main()
