@@ -1,4 +1,4 @@
-from lister import __version__
+from . import __version__
 import argparse
 from enum import Enum
 from pathlib import Path
