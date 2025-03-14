@@ -7,12 +7,13 @@ It provides flexible options for including or excluding files based on various c
 
 ## Features
 
-- Recursively list files in a directory structure
-- Include or exclude hidden files and directories
-- Filter files by extension
-- Skip specified directories and files
+- Recursively list files within directory structures
+- Option to include or exclude hidden files and directories
+- Filter files by specific extensions (e.g., `.txt`, `.py`)
+- Skip specified directories and file patterns
 - Output full or relative file paths
 - Save file contents to an output file
+- Automatic removal of empty lines from output (optional)
 
 ## Installation
 
@@ -50,6 +51,8 @@ files-lister [OPTIONS]
 
 `-s`, `--skip_files`: Files or file patterns to skip
 
+`-r`, `--remove_empty_lines`: Keep empty lines in output (by default, empty lines are removed)
+
 `-q`, `--quiet`: Do not print output to console
 
 `--full_path`: Print full path instead of relative path
@@ -63,11 +66,19 @@ This command will list all Python files in the current directory, excluding the 
 ## Output
 The script generates a file named files_output in the current directory, containing the list of files and their contents.
 
+### Keep empty lines in the output
+files-lister -f "." -r
+
 ## Development
 For development purposes, if you are using UV (Python packaging in Rust) for dependency management, you can set up the environment with:
 
 ```bash
 uv sync
+```
+
+### Run locally
+```bash
+uv run files-lister
 ```
 
 ## Running tests

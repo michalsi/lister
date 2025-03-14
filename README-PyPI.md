@@ -10,6 +10,7 @@ Files Lister is a Python utility designed to recursively list and save the conte
 - Skip specified directories and file patterns
 - Output full or relative file paths
 - Save file contents to an output file
+- Automatic removal of empty lines from output (optional)
 
 ## Installation
 
@@ -43,6 +44,8 @@ files-lister [OPTIONS]
 `-x`, `--include_extension`: Include only files with specified extensions (e.g., '.txt' '.py')
 
 `-d`, `--skip_dirs`: Additional directories to skip
+
+`-r`, `--remove_empty_lines`: Keep empty lines in output (by default, empty lines are removed)
 
 `-s`, `--skip_files`: Files or file patterns to skip
 

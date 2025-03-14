@@ -1,3 +1,4 @@
+from lister import __version__
 import argparse
 from enum import Enum
 from pathlib import Path
@@ -85,6 +86,9 @@ def parse_arguments() -> argparse.Namespace:
                         help="Keep empty lines in output (by default, empty lines are removed)")
     parser.add_argument("-q", "--quiet", action="store_true", help="Do not print output to console")
     parser.add_argument("--full_path", action="store_true", help="Print full path instead of relative path")
+    parser.add_argument("-v", "--version", action="version",
+                        version=f"%(prog)s {__version__}",
+                        help="Show program's version number and exit")
 
     return parser.parse_args()
 

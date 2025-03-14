@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "files_lister"
-version = "0.2.0"
+version = "0.2.1"
 description = "A utility for recursively listing and saving the content of source code files"
 readme = "README-PyPI.md"
 requires-python = ">=3.9"
