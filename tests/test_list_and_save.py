@@ -1,13 +1,12 @@
 import io
 import sys
-import os
 from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-from ..src.lister.main import format_file_output, is_skippable_path, should_include_file, get_files_recursively, \
+from lister.main import format_file_output, is_skippable_path, should_include_file, get_files_recursively, \
     parse_arguments, SkipDirs, main, remove_empty_lines
 
 SCRIPT_NAME = "list_and_save.py"
